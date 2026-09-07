@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>سِجِلّ الحِفظ</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F3D3E">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="سجل الحفظ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --parchment:#F4EDDC;
+  --parchment-dark:#E7DCBE;
+  --parchment-edge:#DDCE9F;
+  --ink:#1D2B28;
+  --ink-soft:#3C4E49;
+  --teal:#0F3D3E;
+  --teal-light:#1E5C5A;
+  --gold:#B08A4E;
+  --gold-light:#D8B978;
+  --maroon:#7C3030;
+  --half:#C9A25A;
+  --full:#0F3D3E;
+  --shadow:0 2px 10px rgba(29,43,40,0.12);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:
+    radial-gradient(circle at 20% 10%, rgba(176,138,78,0.05), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(15,61,62,0.04), transparent 40%),
+    var(--parchment);
+  color:var(--ink);
+  font-family:'Cairo', sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.amiri{font-family:'Amiri', serif;}
+
+#app{max-width:520px; margin:0 auto; padding:0 0 100px 0; min-height:100vh; position:relative;}
+
+/* ===== Header ===== */
+header.top{
+  padding:28px 20px 20px 20px;
+  border-bottom:2px solid var(--gold);
+  position:relative;
+  background:linear-gradient(180deg, rgba(231,220,190,0.6), transparent);
+}
+header.top::after{
+  content:"";
+  position:absolute; bottom:-6px; left:20px; right:20px; height:1px;
+  background:var(--gold-light);
+}
+h1.title{
+  font-family:'Amiri', serif;
+  font-weight:700;
+  font-size:30px;
+  margin:0;
+  color:var(--teal);
+  letter-spacing:0.5px;
+}
+p.subtitle{
+  margin:6px 0 0 0;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+.back-row{
+  display:flex; align-items:center; gap:10px; margin-bottom:6px;
+}
+.back-btn{
+  background:none; border:none; cursor:pointer;
+  font-size:22px; color:var(--teal); padding:4px 8px;
+  font-family:inherit;
+}
+
+/* ===== Screens ===== */
+.screen{display:none; padding:18px 20px;}
+.screen.active{display:block;}
+
+/* ===== Student list ===== */
+.student-card{
+  background:var(--parchment-dark);
+  border-right:5px solid var(--gold);
+  border-radius:4px;
+  padding:16px 18px;
+  margin-bottom:14px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+  transition:transform .15s ease;
+}
+.student-card:active{transform:scale(0.98);}
+.student-name{
+  font-family:'Amiri', serif; font-weight:700; font-size:20px; color:var(--ink);
+}
+.student-meta{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+.student-arrow{font-size:20px; color:var(--gold); transform:scaleX(-1);}
+
+.empty-state{
+  text-align:center; padding:60px 20px; color:var(--ink-soft);
+}
+.empty-state .glyph{font-size:40px; margin-bottom:14px; color:var(--gold);}
+.empty-state p{font-size:14px; line-height:1.8; margin:0;}
+
+/* ===== FAB ===== */
+.fab{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+  background:var(--teal); color:var(--parchment);
+  border:none; border-radius:30px;
+  padding:14px 28px;
+  font-family:'Cairo', sans-serif; font-weight:600; font-size:15px;
+  box-shadow:0 4px 14px rgba(15,61,62,0.35);
+  cursor:pointer; display:flex; align-items:center; gap:8px;
+  max-width:480px; width:calc(100% - 40px); justify-content:center;
+  z-index:50;
+}
+.fab:active{transform:translateX(-50%) scale(0.97);}
+.fab .plus{font-size:19px; line-height:1;}
+
+/* ===== Book card ===== */
+.book-card{
+  background:var(--parchment-dark);
+  border:1px solid var(--parchment-edge);
+  border-radius:6px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+.book-card.completed{
+  border:1px solid var(--gold);
+  background:linear-gradient(180deg, rgba(216,185,120,0.16), var(--parchment-dark) 40%);
+}
+.seal{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--teal); color:var(--parchment);
+  border:1px solid var(--gold-light);
+  border-radius:20px; padding:4px 12px 4px 10px;
+  font-size:12px; font-weight:600; margin-top:8px;
+}
+.seal .seal-glyph{font-size:13px; color:var(--gold-light);}
+
+.total-progress{margin-top:14px; padding-top:12px; border-top:1px dashed var(--parchment-edge);}
+.total-progress-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+.total-progress-label{font-size:11px; color:var(--ink-soft);}
+.total-progress-num{font-size:13px; color:var(--teal); font-weight:600; cursor:pointer; padding:2px 8px; border-radius:4px; background:rgba(15,61,62,0.07);}
+.total-progress-track{height:7px; background:var(--parchment-edge); border-radius:4px; overflow:hidden;}
+.total-progress-fill{height:100%; background:linear-gradient(90deg, var(--gold), var(--teal)); border-radius:4px; transition:width .3s ease;}
+.book-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+.book-name{font-family:'Amiri', serif; font-weight:700; font-size:19px; color:var(--teal);}
+.book-target{font-size:12px; color:var(--ink-soft); margin-top:3px;}
+.start-date{font-size:11px; color:var(--ink-soft); margin-top:4px; cursor:pointer; text-decoration:underline dotted var(--parchment-edge); display:inline-block;}
+.book-del{background:none;border:none;color:var(--maroon);font-size:13px;cursor:pointer;padding:4px;font-family:inherit;}
+
+.week-row{
+  display:flex; justify-content:space-between; margin-top:16px; gap:4px;
+}
+.day-cell{
+  display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;
+}
+.day-label{font-size:11px; color:var(--ink-soft);}
+.day-date{font-size:9px; color:#9a9482;}
+.ink-dot{
+  width:30px; height:30px; border-radius:50%;
+  border:2px solid var(--gold);
+  background:transparent;
+  cursor:pointer;
+  position:relative;
+  transition:background .25s ease, border-color .25s ease, transform .15s ease;
+}
+.ink-dot:active{transform:scale(0.88);}
+.ink-dot.off-target{border-color:#cfc4a4; opacity:0.55;}
+.ink-dot.state-half{background:var(--half); border-color:var(--half);}
+.ink-dot.state-full{background:var(--full); border-color:var(--full);}
+.ink-dot.state-full::after{
+  content:"✓";
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--parchment); font-size:14px; font-weight:700;
+}
+
+.progress-wrap{margin-top:14px;}
+.progress-label{font-size:11px; color:var(--ink-soft); margin-bottom:5px; display:flex; justify-content:space-between;}
+.progress-track{height:6px; background:var(--parchment-edge); border-radius:4px; overflow:hidden;}
+.progress-fill{height:100%; background:var(--teal); border-radius:4px; transition:width .3s ease;}
+
+.week-nav{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; padding:10px 14px;
+  background:var(--parchment-dark); border-radius:6px;
+  border:1px solid var(--parchment-edge);
+}
+.week-nav button{
+  background:none; border:none; font-size:18px; color:var(--teal); cursor:pointer; padding:4px 10px;
+}
+.week-nav .week-label{font-size:13px; color:var(--ink-soft);}
+
+/* ===== Modal ===== */
+.overlay{
+  position:fixed; inset:0; background:rgba(29,43,40,0.55);
+  display:none; align-items:flex-end; justify-content:center; z-index:100;
+}
+.overlay.active{display:flex;}
+.modal{
+  background:var(--parchment);
+  width:100%; max-width:520px;
+  border-radius:16px 16px 0 0;
+  padding:22px 22px 28px 22px;
+  border-top:3px solid var(--gold);
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+.modal h3{
+  font-family:'Amiri', serif; font-size:20px; color:var(--teal); margin:0 0 16px 0;
+}
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px;}
+.field input, .field select{
+  width:100%; padding:11px 12px; border-radius:6px;
+  border:1px solid var(--parchment-edge); background:#fff;
+  font-family:'Cairo', sans-serif; font-size:14px; color:var(--ink);
+}
+.field-row{display:flex; gap:10px;}
+.field-row .field{flex:1;}
+.modal-actions{display:flex; gap:10px; margin-top:8px;}
+.btn{
+  flex:1; padding:12px; border-radius:6px; border:none; cursor:pointer;
+  font-family:'Cairo', sans-serif; font-weight:600; font-size:14px;
+}
+.btn-primary{background:var(--teal); color:var(--parchment);}
+.btn-secondary{background:transparent; color:var(--ink-soft); border:1px solid var(--parchment-edge);}
+
+/* ===== Settings row ===== */
+.settings-row{
+  display:flex; justify-content:center; gap:18px; margin-top:22px; padding-top:16px;
+  border-top:1px solid var(--parchment-edge);
+}
+.settings-row button{
+  background:none; border:none; color:var(--ink-soft); font-size:12px; cursor:pointer;
+  font-family:'Cairo', sans-serif; display:flex; align-items:center; gap:5px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="screen-home">
+    <header class="top">
+      <h1 class="title">سِجِلّ الحِفظ</h1>
+      <p class="subtitle">متابعة حفظ الطلاب — يعمل بلا اتصال بالإنترنت</p>
+    </header>
+    <div style="padding:18px 20px;" id="wrap-students">
+      <div id="student-list"></div>
+    </div>
+    <div class="settings-row">
+      <button onclick="exportData()">⇩ نسخة احتياطية</button>
+      <button onclick="triggerImport()">⇧ استيراد نسخة</button>
+    </div>
+    <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+
+  <!-- STUDENT SCREEN -->
+  <div class="screen" id="screen-student">
+    <header class="top">
+      <div class="back-row">
+        <button class="back-btn" onclick="goHome()">→</button>
+        <div>
+          <h1 class="title" id="student-title" style="font-size:24px;"></h1>
+        </div>
+      </div>
+      <p class="subtitle" id="student-subtitle"></p>
+    </header>
+    <div style="padding:18px 20px;">
+      <div class="week-nav">
+        <button onclick="shiftWeek(-1)">‹</button>
+        <span class="week-label" id="week-label"></span>
+        <button onclick="shiftWeek(1)">›</button>
+      </div>
+      <div id="book-list"></div>
+    </div>
+  </div>
+
+  <!-- FAB buttons -->
+  <button class="fab" id="fab-add-student" onclick="openStudentModal()"><span class="plus">＋</span> إضافة طالب</button>
+  <button class="fab" id="fab-add-book" style="display:none;" onclick="openBookModal()"><span class="plus">＋</span> إضافة كتاب</button>
+
+</div>
+
+<!-- Add Student Modal -->
+<div class="overlay" id="overlay-student">
+  <div class="modal">
+    <h3>طالب جديد</h3>
+    <div class="field">
+      <label>اسم الطالب</label>
+      <input type="text" id="input-student-name" placeholder="مثال: عبد الله محمد">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('overlay-student')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveStudent()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Book Modal -->
+<div class="overlay" id="overlay-book">
+  <div class="modal">
+    <h3>كتاب جديد</h3>
+    <div class="field">
+      <label>اسم الكتاب / المتن</label>
+      <input type="text" id="input-book-name" placeholder="مثال: مختصر خليل">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>الكمية المستهدفة أسبوعيًا</label>
+        <input type="text" id="input-book-qty" placeholder="مثال: ٣ صفحات">
+      </div>
+      <div class="field">
+        <label>عدد الأيام أسبوعيًا</label>
+        <select id="input-book-days">
+          <option value="1">١</option>
+          <option value="2">٢</option>
+          <option value="3">٣</option>
+          <option value="4">٤</option>
+          <option value="5" selected>٥</option>
+          <option value="6">٦</option>
+          <option value="7">٧</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>إجمالي الكتاب (اختياري — لمعرفة متى يُختم)</label>
+      <input type="number" min="1" id="input-book-total" placeholder="مثال: 180 (بعدد الصفحات أو الأبواب)">
+    </div>
+    <div class="field">
+      <label>تاريخ البدء</label>
+      <input type="date" id="input-book-start">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('overlay-book')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveBook()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA LAYER ===================== */
+const STORAGE_KEY = 'hifz-tracker-v1';
+let db = loadData();
+let currentStudentId = null;
+let weekOffset = 0; // 0 = current week
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.error('load error', e); }
+  return { students: [] };
+}
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+/* ===================== DATE HELPERS ===================== */
+// Week starts Saturday (Sat..Fri), matching common Arabic week convention.
+const DAY_LABELS = ['س','ح','ن','ث','ر','خ','ج']; // Sat, Sun, Mon, Tue, Wed, Thu, Fri
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function getWeekStart(offset){
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  const dow = now.getDay(); // 0=Sun..6=Sat
+  const diffToSat = (dow + 1) % 7; // days since last Saturday
+  const start = new Date(now);
+  start.setDate(now.getDate() - diffToSat + offset*7);
+  return start;
+}
+function getWeekDates(offset){
+  const start = getWeekStart(offset);
+  const dates = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(start);
+    d.setDate(start.getDate()+i);
+    dates.push(d);
+  }
+  return dates;
+}
+function weekLabel(offset){
+  const dates = getWeekDates(offset);
+  const first = dates[0], last = dates[6];
+  const opts = {day:'numeric', month:'short'};
+  const label = first.toLocaleDateString('ar-EG', opts) + ' — ' + last.toLocaleDateString('ar-EG', opts);
+  if(offset===0) return 'هذا الأسبوع · ' + label;
+  if(offset===-1) return 'الأسبوع الماضي · ' + label;
+  if(offset===1) return 'الأسبوع القادم · ' + label;
+  return label;
+}
+
+/* ===================== NAVIGATION ===================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goHome(){
+  currentStudentId = null;
+  document.getElementById('fab-add-student').style.display = 'flex';
+  document.getElementById('fab-add-book').style.display = 'none';
+  showScreen('screen-home');
+  renderStudentList();
+}
+function openStudent(id){
+  currentStudentId = id;
+  weekOffset = 0;
+  document.getElementById('fab-add-student').style.display = 'none';
+  document.getElementById('fab-add-book').style.display = 'flex';
+  showScreen('screen-student');
+  renderStudentScreen();
+}
+
+/* ===================== RENDER: HOME ===================== */
+function renderStudentList(){
+  const list = document.getElementById('student-list');
+  if(db.students.length === 0){
+    list.innerHTML = `<div class="empty-state">
+      <div class="glyph">✒</div>
+      <p>لا يوجد طلاب بعد.<br>اضغط «إضافة طالب» للبدء بفتح سجل جديد.</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = db.students.map(s=>{
+    const bookCount = s.books.length;
+    return `<div class="student-card" onclick="openStudent('${s.id}')">
+      <div>
+        <div class="student-name">${escapeHtml(s.name)}</div>
+        <div class="student-meta">${bookCount} ${bookCount===1?'كتاب':'كتب'}</div>
+      </div>
+      <div class="student-arrow">‹</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== RENDER: STUDENT / BOOKS ===================== */
+function renderStudentScreen(){
+  const student = db.students.find(s=>s.id===currentStudentId);
+  if(!student){ goHome(); return; }
+  document.getElementById('student-title').textContent = student.name;
+  document.getElementById('student-subtitle').textContent = student.books.length + ' ' + (student.books.length===1?'كتاب مسجّل':'كتب مسجّلة');
+  document.getElementById('week-label').textContent = weekLabel(weekOffset);
+
+  const dates = getWeekDates(weekOffset);
+  const list = document.getElementById('book-list');
+
+  if(student.books.length === 0){
+    list.innerHTML = `<div class="empty-state">
+      <div class="glyph">📖</div>
+      <p>لا توجد كتب مضافة لهذا الطالب.<br>اضغط «إضافة كتاب» لبدء المتابعة.</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = student.books.map(book=>{
+    const target = parseInt(book.days) || 5;
+    let doneCount = 0;
+    const cells = dates.map((d,i)=>{
+      const key = fmtDate(d);
+      const state = (book.log && book.log[key]) || 0; // 0,1,2
+      if(state===2) doneCount++;
+      const stateClass = state===2?'state-full':(state===1?'state-half':'');
+      const dayLabel = DAY_LABELS[i];
+      const dayNum = d.getDate();
+      const isFuture = d > new Date();
+      return `<div class="day-cell">
+        <span class="day-label">${dayLabel}</span>
+        <div class="ink-dot ${stateClass}" onclick="cycleDay('${book.id}','${key}')" title="${key}"></div>
+        <span class="day-date">${dayNum}</span>
+      </div>`;
+    }).join('');
+
+    const pct = Math.min(100, Math.round((doneCount/target)*100));
+    const isComplete = book.totalQty && book.progress >= book.totalQty;
+    const totalPct = book.totalQty ? Math.min(100, Math.round((book.progress/book.totalQty)*100)) : 0;
+
+    const sealHtml = isComplete
+      ? `<div class="seal"><span class="seal-glyph">۞</span> خُتِم${book.completedDate ? ' — ' + book.completedDate : ''}</div>`
+      : '';
+
+    const startDateHtml = book.startDate
+      ? `<div class="start-date" onclick="editStartDate('${book.id}')">بدأ في: ${book.startDate}</div>`
+      : '';
+
+    const totalProgressHtml = book.totalQty ? `
+      <div class="total-progress">
+        <div class="total-progress-head">
+          <span class="total-progress-label">التقدم الكلي في الكتاب</span>
+          <span class="total-progress-num" onclick="editProgress('${book.id}')">${book.progress} / ${book.totalQty}</span>
+        </div>
+        <div class="total-progress-track"><div class="total-progress-fill" style="width:${totalPct}%"></div></div>
+      </div>` : '';
+
+    return `<div class="book-card ${isComplete?'completed':''}">
+      <div class="book-head">
+        <div>
+          <div class="book-name amiri">${escapeHtml(book.name)}</div>
+          <div class="book-target">${escapeHtml(book.qty||'')} · ${book.days} أيام في الأسبوع</div>
+          ${startDateHtml}
+          ${sealHtml}
+        </div>
+        <button class="book-del" onclick="deleteBook('${book.id}')">حذف</button>
+      </div>
+      <div class="week-row">${cells}</div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>إنجاز هذا الأسبوع</span><span>${doneCount} / ${target}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      ${totalProgressHtml}
+    </div>`;
+  }).join('');
+}
+
+function cycleDay(bookId, dateKey){
+  const student = db.students.find(s=>s.id===currentStudentId);
+  const book = student.books.find(b=>b.id===bookId);
+  if(!book.log) book.log = {};
+  const current = book.log[dateKey] || 0;
+  book.log[dateKey] = (current + 1) % 3; // 0 -> 1 -> 2 -> 0
+  saveData();
+  renderStudentScreen();
+}
+
+function editStartDate(bookId){
+  const student = db.students.find(s=>s.id===currentStudentId);
+  const book = student.books.find(b=>b.id===bookId);
+  const input = prompt(`متى بدأ "${book.name}"؟ (YYYY-MM-DD)`, book.startDate || fmtDate(new Date()));
+  if(input === null) return;
+  const trimmed = input.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)){
+    alert('الصيغة غير صحيحة، يرجى كتابة التاريخ هكذا: 2026-01-15');
+    return;
+  }
+  book.startDate = trimmed;
+  saveData();
+  renderStudentScreen();
+}
+
+function editProgress(bookId){
+  const student = db.students.find(s=>s.id===currentStudentId);
+  const book = student.books.find(b=>b.id===bookId);
+  const input = prompt(`كم أُنجز من "${book.name}" حتى الآن؟ (من أصل ${book.totalQty})`, book.progress);
+  if(input === null) return;
+  let val = parseInt(input);
+  if(isNaN(val)) return;
+  val = Math.max(0, Math.min(val, book.totalQty));
+  const wasComplete = book.totalQty && book.progress >= book.totalQty;
+  book.progress = val;
+  const nowComplete = book.totalQty && book.progress >= book.totalQty;
+  if(nowComplete && !wasComplete){
+    book.completedDate = fmtDate(new Date());
+    saveData();
+    renderStudentScreen();
+    setTimeout(()=>alert(`تم بحمد الله خَتْم "${book.name}" — تهانينا لـ${student.name}! ۞`), 150);
+    return;
+  }
+  if(!nowComplete && wasComplete){
+    book.completedDate = null;
+  }
+  saveData();
+  renderStudentScreen();
+}
+
+function shiftWeek(delta){
+  weekOffset += delta;
+  renderStudentScreen();
+}
+
+/* ===================== CRUD ===================== */
+function openStudentModal(){
+  document.getElementById('input-student-name').value = '';
+  document.getElementById('overlay-student').classList.add('active');
+}
+function saveStudent(){
+  const name = document.getElementById('input-student-name').value.trim();
+  if(!name) return;
+  db.students.push({ id: uid(), name, books: [] });
+  saveData();
+  closeModal('overlay-student');
+  renderStudentList();
+}
+
+function openBookModal(){
+  document.getElementById('input-book-name').value = '';
+  document.getElementById('input-book-qty').value = '';
+  document.getElementById('input-book-days').value = '5';
+  document.getElementById('input-book-total').value = '';
+  document.getElementById('input-book-start').value = fmtDate(new Date());
+  document.getElementById('overlay-book').classList.add('active');
+}
+function saveBook(){
+  const name = document.getElementById('input-book-name').value.trim();
+  const qty = document.getElementById('input-book-qty').value.trim();
+  const days = document.getElementById('input-book-days').value;
+  const totalRaw = document.getElementById('input-book-total').value.trim();
+  const totalQty = totalRaw ? parseInt(totalRaw) : null;
+  const startDate = document.getElementById('input-book-start').value || fmtDate(new Date());
+  if(!name) return;
+  const student = db.students.find(s=>s.id===currentStudentId);
+  student.books.push({ id: uid(), name, qty, days, log: {}, totalQty, progress: 0, completedDate: null, startDate });
+  saveData();
+  closeModal('overlay-book');
+  renderStudentScreen();
+}
+function deleteBook(bookId){
+  const student = db.students.find(s=>s.id===currentStudentId);
+  student.books = student.books.filter(b=>b.id!==bookId);
+  saveData();
+  renderStudentScreen();
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('active');
+}
+
+/* ===================== BACKUP / RESTORE ===================== */
+function exportData(){
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = fmtDate(new Date());
+  a.href = url;
+  a.download = `hifz-backup-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function triggerImport(){
+  document.getElementById('import-file').click();
+}
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.students) throw new Error('invalid');
+      if(db.students.length > 0){
+        if(!confirm('سيتم استبدال البيانات الحالية بالنسخة المستوردة. هل تريد المتابعة؟')) return;
+      }
+      db = parsed;
+      saveData();
+      renderStudentList();
+      alert('تم استيراد النسخة الاحتياطية بنجاح.');
+    }catch(err){
+      alert('تعذّر قراءة الملف. تأكد أنه ملف نسخة احتياطية صحيح.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+/* ===================== UTIL ===================== */
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* Close modals on backdrop click */
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.remove('active'); });
+});
+
+/* ===================== INIT ===================== */
+renderStudentList();
+
+/* Register service worker so the app keeps working with no internet
+   after the very first visit, and so the browser offers "Install app". */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

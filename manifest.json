@@ -1,0 +1,17 @@
+{
+  "name": "سِجِلّ الحِفظ",
+  "short_name": "سجل الحفظ",
+  "description": "متابعة حفظ الطلاب اليومي بلا اتصال بالإنترنت",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4EDDC",
+  "theme_color": "#0F3D3E",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
